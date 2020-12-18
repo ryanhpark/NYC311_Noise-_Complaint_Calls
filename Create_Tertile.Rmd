@@ -1,0 +1,99 @@
+---
+title: "thesis_2"
+author: "Hyungbin Park"
+date: "5/5/2020"
+output: pdf_document
+---
+```{r}
+setwd("~/Downloads")
+library(tidyverse)
+library(psych)
+data <- read_csv("finalvertical.csv")
+
+three <- data %>%
+  filter(year == 2013)
+five <- data %>%
+  filter(year == 2015)
+seven <- data %>%
+  filter(year == 2017)
+```
+
+#creating descriptive stats for the average of three years
+```{r}
+ntaavg <- (three[,4:22] + five[,4:22] + seven[,4:22])/3
+ntaavg <- cbind(three[,1:3], ntaavg)
+describe(ntaavg)
+write_csv(ntaavg, path = "ntaavg.csv")
+```
+
+#creating 25,50,25 groups
+```{r}
+#2013
+quantile(three$gini, c(0.25,0.75))
+
+three$ginitertile <- cut(three$gini,breaks = c(0,0.41865,0.478775,1),
+                         include.lowest = TRUE, right = FALSE,
+                         labels=c(0,1,2))
+#2015
+quantile(five$gini, c(0.25,0.75))
+
+five$ginitertile <- cut(five$gini,breaks = c(0,0.426475,0.4814,1),
+                         include.lowest = TRUE, right = FALSE,
+                         labels=c(0,1,2))
+#2017
+quantile(seven$gini, c(0.25,0.75))
+
+seven$ginitertile <- cut(seven$gini,breaks = c(0,0.428475,0.48955,1),
+                         include.lowest = TRUE, right = FALSE,
+                         labels=c(0,1,2))
+```
+
+#creating 33,33,33 tertiles
+```{r}
+#2013
+quantile(three$gini, c(1/3,2/3))
+
+three$ginitertile2 <- cut(three$gini,breaks = c(0,0.4260667,0.4666667,1),
+                         include.lowest = TRUE, right = FALSE,
+                         labels=c(0,1,2))
+#2015
+quantile(five$gini, c(1/3,2/3))
+
+five$ginitertile2 <- cut(five$gini,breaks = c(0,0.4325667,0.4715,1),
+                         include.lowest = TRUE, right = FALSE,
+                         labels=c(0,1,2))
+#2017
+quantile(seven$gini, c(1/3,2/3))
+
+seven$ginitertile2 <- cut(seven$gini,breaks = c(0,0.4389667,0.4802333,1),
+                         include.lowest = TRUE, right = FALSE,
+                         labels=c(0,1,2))
+
+finaltertile <- rbind(three,five,seven)
+write_csv(finaltertile, path = "finaltertile.csv")
+```
+
+```{r}
+data <- read_csv("ntaavg.csv")
+library(MASS)
+data %>%
+ ggplot(aes(x=gini, noisecallcount)) + labs(x= "Gini Index (Average of 3 years)",y="Count of Noise Complaint Calls") +
+  geom_point() +stat_smooth(method = "lm", size = 1, se =F) +theme_bw()
+
+ggplot(data, aes(x = gini)) + 
+    geom_histogram(aes(y =..density..),colour = "black", fill = "blue",alpha = 0.3) +
+    labs(x= "Gini Index (Average of 3 years)", y = "Density")+
+  stat_function(fun = dnorm, args = list(mean = mean(data$gini), sd = sd(data$gini)))+
+    theme_bw()
+  
+```
+
+
+
+
+
+
+
+
+
+

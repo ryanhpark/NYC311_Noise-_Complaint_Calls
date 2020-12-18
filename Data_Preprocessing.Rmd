@@ -1,0 +1,275 @@
+---
+title: "RThesis"
+author: "Hyungbin Park"
+date: "4/19/2020"
+output: html_document
+---
+
+```{r}
+setwd("~/Downloads")
+library(readr)
+```
+
+# 2017 Noise and Heat Call DATA
+```{r}
+#Reading noise and heating calls in 2017 and reducing the columns
+noise17 <- read_csv("noise17orig.csv")
+noise2017 <- noise17[c("Unique Key", "Latitude", "Longitude")]
+write_csv(noise2017, path = "Noise2017.csv")
+heat17 <- read_csv("heat17orig.csv")
+heat2017 <- heat17[c("Unique Key", "Latitude", "Longitude")]
+write_csv(heat2017, path = "Heat2017.csv")
+
+#loading the joined layer made with QGIS and aggregating the calls by NTA
+no17 <- read_csv("no17.csv")
+no17
+no17new <- aggregate(no17$"Unique Key", by=list(no17$NTACode), FUN=length)
+no17new
+names(no17new) <- c("NTACode","CallCount")
+sum(no17new$CallCount)
+
+ht17 <- read_csv("ht17.csv")
+View(ht17)
+ht17new <- aggregate(ht17$"Unique Key", by=list(ht17$NTACode), FUN=length)
+ht17new
+names(ht17new) <- c("NTACode","CallCount")
+sum(ht17new$CallCount)
+
+noise_heat_17 <-merge(no17new, ht17new, by.x = "NTACode",by.y = "NTACode", all.x = TRUE)
+names(noise_heat_17) <- c("NTACode","Noise Call Count", "Heat Call Count")
+write_csv(noise_heat_17, path="noise_heat_17.csv")
+```
+
+# 2013 Noise and Heat Call DATA
+```{r}
+#Reading noise and heating calls in 2013 and reducing the columns
+noise13 <- read_csv("noise13orig.csv")
+noise2013 <- noise13[c("Unique Key", "Latitude", "Longitude")]
+write_csv(noise2013, path = "Noise2013.csv")
+heat13 <- read_csv("heat13orig.csv")
+heat2013 <- heat13[c("Unique Key", "Latitude", "Longitude")]
+write_csv(heat2013, path = "Heat2013.csv")
+
+#loading the joined layer made with QGIS and aggregating the calls by NTA
+no13 <- read_csv("no13.csv")
+View(no13)
+no13new <- aggregate(no13$"Unique Key", by=list(no13$NTACode), FUN=length)
+View(no13new)
+names(no13new) <- c("NTACode","CallCount")
+sum(no13new$CallCount)
+
+ht13 <- read_csv("ht13.csv")
+View(ht13)
+ht13new <- aggregate(ht13$"Unique Key", by=list(ht13$NTACode), FUN=length)
+names(ht13new) <- c("NTACode","CallCount")
+View(ht13new)
+sum(ht13new$CallCount)
+
+noise_heat_13 <-merge(no13new, ht13new, by.x = "NTACode",by.y = "NTACode", all.x = TRUE, all.y = TRUE)
+names(noise_heat_13) <- c("NTACode","Noise Call Count", "Heat Call Count")
+View(noise_heat_13)
+write_csv(noise_heat_13, path="noise_heat_13.csv")
+```
+
+# 2015 Noise and Heat Call DATA
+```{r}
+#Reading noise and heating calls in 2015 and reducing the columns
+
+noise15 <- read_csv("noise15orig.csv")
+noise2015 <- noise15[c("Unique Key", "Latitude", "Longitude")]
+write_csv(noise2015, path = "Noise2015.csv")
+View(noise2015)
+heat15 <- read_csv("heat15orig.csv")
+heat2015 <- heat15[c("Unique Key", "Latitude", "Longitude")]
+write_csv(heat2015, path = "Heat2015.csv")
+
+#loading the joined layer made with QGIS and aggregating the calls by NTA
+no15 <- read_csv("no15.csv")
+no15
+no15new <- aggregate(no15$"Unique Key", by=list(no15$NTACode), FUN=length)
+no15new
+names(no15new) <- c("NTACode","CallCount")
+sum(no15new$CallCount)
+
+ht15 <- read_csv("ht15.csv")
+View(ht15)
+ht15new <- aggregate(ht15$"Unique Key", by=list(ht15$NTACode), FUN=length)
+ht15new
+names(ht15new) <- c("NTACode","CallCount")
+sum(ht15new$CallCount)
+
+noise_heat_15 <-merge(no15new, ht15new, by.x = "NTACode",by.y = "NTACode", all.x = TRUE, all.y = TRUE)
+names(noise_heat_15) <- c("NTACode","Noise Call Count", "Heat Call Count")
+write_csv(noise_heat_15, path="noise_heat_15.csv")
+```
+
+
+```{r}
+# Importing the gini and total population by tract from ACS 
+ginitract2013 <- read_csv("ginitract2013.csv")
+ginitract2013 <- ginitract2013[-c(1),]
+tptract2013 <- read_csv("tptract2013.csv")
+tptract2013 <- tptract2013[-c(1),]
+ginitract2015 <- read_csv("ginitract2015.csv")
+ginitract2015 <- ginitract2015[-c(1),]
+tptract2015 <- read_csv("tptract2015.csv")
+tptract2015 <- tptract2015[-c(1),]
+
+# Merging gini and total population by tract 
+tract2013 <-merge(ginitract2013, tptract2013, by.x = "GEO_ID",by.y = "GEO_ID", all.x = TRUE)
+tract2013 <- tract2013[c(1,2,3,6)]
+tract2013$tract_id <- substring(tract2013[,1],15,20)
+tract2013$boro_id <- substring(tract2013[,1],12,14)
+tract2013$tractboro <- substring(tract2013[,1],12,20)
+tract2013 <- tract2013[c(2,7,6,5,3,4)]
+View(tract2013)
+
+tract2015 <-merge(ginitract2015, tptract2015, by.x = "GEO_ID",by.y = "GEO_ID", all.x = TRUE)
+tract2015 <- tract2015[c(1,2,3,6)]
+tract2015$tract_id <- substring(tract2015[,1],15,20)
+tract2015$boro_id <- substring(tract2015[,1],12,14)
+tract2015$tractboro <- substring(tract2015[,1],12,20)
+tract2015 <- tract2015[c(2,7,6,5,3,4)]
+View(tract2015)
+```
+
+#importing nta_tract equivalent map data
+```{r}
+tract_nta <- read_csv("tract_nta.csv")
+tract_nta$tractboro <- paste(tract_nta$County, tract_nta$Tract, sep="")
+tract_nta <- tract_nta[c(3,1,2)]
+```
+
+#merging the nta_tract equivalent data with the gini and total population data 
+```{r}
+tractnta2013 <-merge(tract2013, tract_nta, by.x = "tractboro",by.y = "tractboro", all.x = TRUE)
+tractnta2013 <- tractnta2013[c(1,5,6,7,8)]
+tractnta2013 <- tractnta2013[order(tractnta2013$NTAName),]
+row.names(tractnta2013) <- NULL
+names(tractnta2013)[2] <- "gini"
+names(tractnta2013)[3] <- "population"
+View(tractnta2013)
+tractnta2015 <-merge(tract2015, tract_nta, by.x = "tractboro",by.y = "tractboro", all.x = TRUE)
+tractnta2015 <- tractnta2015[c(1,5,6,7,8)]
+tractnta2015 <- tractnta2015[order(tractnta2015$NTAName),]
+row.names(tractnta2015) <- NULL
+names(tractnta2015)[2] <- "gini"
+names(tractnta2015)[3] <- "population"
+View(tractnta2015)
+
+write_csv(tractnta2013, path = "tractnta2013.csv")
+write_csv(tractnta2015, path = "tractnta2015.csv")
+```
+
+#importing queried tables of weighted gini by NTA
+```{r}
+weighted2013 <- read_csv("weighted2013.csv")
+View(weighted2013)
+weighted2015 <- read_csv("weighted2015.csv")
+View(weighted2015)
+```
+
+# Merging the weighted gini and noise heat calls in 2013 and 2015
+```{r}
+nohtgini13 <-merge(weighted2013, noise_heat_13, by.x = "NTACode",by.y = "NTACode", all.x = TRUE, all.y = TRUE)
+View(nohtgini13)
+write_csv(nohtgini13, path = "nohtgini13.csv")
+nohtgini15 <-merge(weighted2015, noise_heat_15, by.x = "NTACode",by.y = "NTACode", all.x = TRUE, all.y = TRUE)
+View(nohtgini15)
+write_csv(nohtgini15, path = "nohtgini15.csv")
+```
+
+##Importing and merging the data files and finalizing the dataset for 2017
+```{r}
+noht17 <- read_csv("noise_heat_17.csv")
+gicen17 <- read_csv("ginicensus2017.csv")
+
+final17 <-merge(gicen17, noht17, by.x = "NTACode",by.y = "NTACode", all.x = TRUE)
+View(final17)
+final17 <- final17[-c(196,197,198),]
+final17["r_ncall"] <- (final17$`Noise Call Count`)/ (final17$Pop_1E)
+final17["r_hcall"] <- (final17$`Heat Call Count` )/ (final17$Pop_1E)
+final17["lr_ncall"] <- log((final17$`Noise Call Count`)/ (final17$Pop_1E))
+final17["lr_hcall"] <- log((final17$`Heat Call Count` )/ (final17$Pop_1E))
+write_csv(final17, path = "final17.csv")
+colnames(final17)
+```
+
+##Importing and merging the data files and finalizing the dataset for 2013
+```{r}
+nohtgini13 <- read_csv("nohtgini13.csv")
+View(nohtgini13)
+census13 <- read_csv("census13.csv")
+census13 <- census13[-c(196,197),]
+View(census13)
+
+final13 <-merge(census13, nohtgini13, by.x = "GeoID",by.y = "NTACode", all.x = TRUE)
+View(final13)
+final13["r_ncall"] <- (final13$`Noise Call Count`)/ (final13$PopE)
+final13["r_hcall"] <- (final13$`Heat Call Count` )/ (final13$PopE)
+final13["lr_ncall"] <- log((final13$`Noise Call Count`)/ (final13$PopE))
+final13["lr_hcall"] <- log((final13$`Heat Call Count` )/ (final13$PopE))
+write_csv(final13, path = "final13.csv")
+colnames(final13)
+```
+
+##Importing and merging the data files and finalizing the dataset for 2015
+```{r}
+nohtgini15 <- read_csv("nohtgini15.csv")
+View(nohtgini15)
+census15 <- read_csv("census15.csv")
+census15 <- census15[-c(196,197),]
+View(census15)
+
+final15 <-merge(census15, nohtgini15, by.x = "GeoID",by.y = "NTACode", all.x = TRUE)
+View(final15)
+final15["r_ncall"] <- (final15$`Noise Call Count`)/ (final15$Pop_1E)
+final15["r_hcall"] <- (final15$`Heat Call Count` )/ (final15$Pop_1E)
+final15["lr_ncall"] <- log((final15$`Noise Call Count`)/ (final15$Pop_1E))
+final15["lr_hcall"] <- log((final15$`Heat Call Count` )/ (final15$Pop_1E))
+write_csv(final15, path = "final15.csv")
+colnames(final15)
+```
+
+# renaming the columns for the finalized dataset 2013, 2015, 2017
+```{r}
+dim(final13)
+dim(final15)
+dim(final17)
+colnames(final13)
+colnames(final15)
+colnames(final17)
+
+final15 <- final15[c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,18,16,17,19,20,21,22,23,24,25)]
+final17 <- final17[c(1,2,4,5,6,7,8,9,10,11,12,13,14,15,19,16,17,18,3,20,21,22,23,24,25)]
+names(final13) <- c("NTACode","NTAName","population","malep","hispanicp","whitep","blackp","asianp",
+                    "lessthanHSp","morethanBAp","samehousep","foreignbornp","younger18p","older65p",
+                    "medianincome","medianrent","rentvacrate","renteroccup","gini","noisecallcount",
+                    "heatcallcount","noisecallrate","heatcallrate","lognoiserate","logheatrate")
+names(final15) <- c("NTACode","NTAName","population","malep","hispanicp","whitep","blackp","asianp",
+                    "lessthanHSp","morethanBAp","samehousep","foreignbornp","younger18p","older65p",
+                    "medianincome","medianrent","rentvacrate","renteroccup","gini","noisecallcount",
+                    "heatcallcount","noisecallrate","heatcallrate","lognoiserate","logheatrate")
+names(final17) <- c("NTACode","NTAName","population","malep","hispanicp","whitep","blackp","asianp",
+                    "lessthanHSp","morethanBAp","samehousep","foreignbornp","younger18p","older65p",
+                    "medianincome","medianrent","rentvacrate","renteroccup","gini","noisecallcount",
+                    "heatcallcount","noisecallrate","heatcallrate","lognoiserate","logheatrate")
+
+```
+
+# adding a year variable and merging vertically the 3 final data together
+```{r}
+final13$year <- "2013"
+final15$year <- "2015"
+final17$year <- "2017"
+finalvertical <- rbind(final13, final15, final17)
+finalvertical <- finalvertical[c(26,1:25)]
+
+# excluding the cemeteries in 5 boroughs, airport and rikers island
+finalvertical <- finalvertical[!(finalvertical$NTACode == "MN99"|finalvertical$NTACode =="BK99"|finalvertical$NTACode =="BX99"|finalvertical$NTACode =="SI99"|finalvertical$NTACode =="QN99"|finalvertical$NTACode =="BX98"|finalvertical$NTACode =="QN98"),]
+
+dim(finalvertical)
+View(finalvertical)
+write_csv(finalvertical, path = "finalvertical.csv")
+```
+
